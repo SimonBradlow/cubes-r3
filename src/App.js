@@ -44,7 +44,7 @@ function Scene(props) {
         </Connector>
         <Connector position={[10, 10, 5]}>
           <Model>
-            <MeshTransmissionMaterial clearcoat={1} thickness={0.4} anisotropicBlur={0.9} chromaticAberration={0.9} samples={8} resolution={512} />
+            <MeshTransmissionMaterial clearcoat={1} thickness={0.1} anisotropicBlur={0.1} chromaticAberration={0.1} samples={8} resolution={512} />
           </Model>
         </Connector>
         <Connector position={[10, 10, 5]}>
