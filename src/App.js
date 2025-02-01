@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { useRef, useReducer, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { useGLTF, MeshTransmissionMaterial, Environment, Lightformer } from '@react-three/drei'
+import { useGLTF, MeshTransmissionMaterial, Environment, Lightformer, Text3D, Center } from '@react-three/drei'
 import { CuboidCollider, BallCollider, Physics, RigidBody } from '@react-three/rapier'
 import { EffectComposer, N8AO } from '@react-three/postprocessing'
 import { easing } from 'maath'
@@ -28,6 +28,10 @@ function Scene(props) {
   return (
     <Canvas onClick={click} shadows dpr={[1, 1.5]} gl={{ antialias: false }} camera={{ position: [0, 0, 15], fov: 17.5, near: 1, far: 20 }} {...props}>
       <color attach="background" args={['#b1b3bd']} />
+        <Text3D letterSpacing={-0.04} size={0.5} font="/Triodion_Regular.json" position={[0,0,0]}>
+          Simon Bradlow
+          <meshStandardMaterial color="white" />
+        </Text3D>
       <ambientLight intensity={0.4} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
       <Physics /*debug*/ gravity={[0, 0, 0]}>
