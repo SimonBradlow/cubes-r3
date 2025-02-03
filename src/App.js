@@ -107,7 +107,6 @@ function Pointer({ vec = new THREE.Vector3() }) {
 
 function Model({ children, color = 'white', roughness = 0, divisions = 4, checkerColors = ['#0000ff', '#ffffff'], ...props }) {
   const ref = useRef()
-  const { nodes, materials } = useGLTF('/c-transformed.glb')
   useFrame((state, delta) => {
     easing.dampC(ref.current.material.color, color, 0.2, delta)
   })
@@ -139,7 +138,7 @@ function Model({ children, color = 'white', roughness = 0, divisions = 4, checke
     return texture;
   }, []);
   return (
-    <mesh ref={ref} castShadow receiveShadow scale={10} geometry={nodes.connector.geometry}>
+    <mesh ref={ref} castShadow receiveShadow scale={10}>
       <boxGeometry args={[0.10, 0.10, 0.10]} /> {/* Cube Model */}
       <meshStandardMaterial metalness={0.01} roughness={roughness} map={checkerTexture} />  {/* map={materials.base.map} */}
       {children}
