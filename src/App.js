@@ -28,7 +28,7 @@ export const App = () => {
     style.innerHTML = `
       @font-face {
         font-family: 'Triodion Regular';
-        src: url('/Triodion-Regular.ttf') format('truetype');
+        src: url('/fonts/Triodion-Regular.ttf') format('truetype');
         font-weight: normal;
         font-style: normal;
         lineHeight: '1',  // or a smaller value like '0.9'
@@ -90,7 +90,7 @@ function ResponsiveText({
     return (
       <Text
         key={`shadow-${i}`}
-        font="/Triodion-Regular.ttf"
+        font="/fonts/Triodion-Regular.ttf"
         color={getShadowColor(i, 5)}
         anchorX="left"
         anchorY="middle"
@@ -111,7 +111,7 @@ function ResponsiveText({
     <>
       {shadows}
       <Text
-        font="/Triodion-Regular.ttf"
+        font="/fonts/Triodion-Regular.ttf"
         color="white"
         anchorX="left"
         anchorY="middle"
@@ -256,7 +256,7 @@ export function SocialLinks3D() {
               <Text
                 key={`icon-shadow-${j}`}
                 ref={j === 0 ? el => (iconRefs.current[name] = el) : null}
-                font="/fa-brands-400.ttf"
+                font="/fonts/fa-brands-400.ttf"
                 fontSize={FONT_SIZE}
                 anchorX="center"
                 anchorY="middle"
@@ -274,7 +274,7 @@ export function SocialLinks3D() {
 
             {/* Main Icon */}
             <Text
-              font="/fa-brands-400.ttf"
+              font="/fonts/fa-brands-400.ttf"
               fontSize={FONT_SIZE}
               anchorX="center"
               anchorY="middle"
@@ -291,7 +291,7 @@ export function SocialLinks3D() {
             {Array.from({ length: shadowLayers }).map((_, j) => (
               <Text
                 key={`text-shadow-${j}`}
-                font="/Triodion-Regular.ttf"
+                font="/fonts/Triodion-Regular.ttf"
                 fontSize={FONT_SIZE}
                 position={[
                   textX + shadowOffsetX * (j + 1),
@@ -309,7 +309,7 @@ export function SocialLinks3D() {
 
             {/* Main Text */}
             <Text
-              font="/Triodion-Regular.ttf"
+              font="/fonts/Triodion-Regular.ttf"
               fontSize={FONT_SIZE}
               position={[textX, 0, 0]}
               anchorX="left"
