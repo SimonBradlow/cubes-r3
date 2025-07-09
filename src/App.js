@@ -1,15 +1,15 @@
 import * as THREE from 'three'
-import { Color, Box3, Vector3 } from 'three'
-import { useRef, useReducer, useMemo, useLayoutEffect, useState, useEffect } from 'react'
-import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber'
-import { useGLTF, MeshTransmissionMaterial, Environment, Lightformer, Text, Html, Text3D, Center } from '@react-three/drei'
+import { Color} from 'three'
+import { useRef, useReducer, useMemo, useState, useEffect } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { MeshTransmissionMaterial, Environment, Lightformer, Text, Html, Text3D} from '@react-three/drei'
 import { CuboidCollider, BallCollider, Physics, RigidBody } from '@react-three/rapier'
 import { EffectComposer, N8AO } from '@react-three/postprocessing'
 import { easing } from 'maath'
+import { accents } from './colors'
 import './App.css'
 
-const accents = ['#ff9d00', '#9582ff', '#a1004b', '#4060ff']
-//const accents = ['#4060ff', '#20ffa0', '#ff4060', '#ffcc00']
+
 const shuffle = (accent = 0) => [
   { color: 'white', roughness: 0.1 },
   { color: 'white', roughness: 0.75 },
@@ -18,7 +18,7 @@ const shuffle = (accent = 0) => [
   { color: 'white', roughness: 0.75 },
   { color: 'white', roughness: 0.1 },
   //{ color: 'white', roughness: 0.1, accent: true },
-  { color: accents[2], roughness: 0.75, accent: true },
+  //{ color: accents[2], roughness: 0.75, accent: true },
   //{ color:  accents[3], roughness: 0.1, accent: true }
 ]
 
@@ -330,6 +330,7 @@ export function SocialLinks3D() {
 
 function Scene(props) {
   const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+  const cameraZoom = isMobile ? 160 : 200  // Increase for desktop only
   const canvasRef = useRef(null)
 
   useEffect(() => {
@@ -350,7 +351,7 @@ function Scene(props) {
   const [accent, click] = useReducer((state) => ++state % accents.length, 0)
   const connectors = useMemo(() => shuffle(accent), [accent])
   return (
-    <Canvas ref={canvasRef} style={{ touchAction: 'none' }} shadows dpr={isMobile ? 1 : [1, 1.5]}f gl={{ antialias: false }} orthographic camera={{ zoom: 160, position: [0, 0, 100], near: 1, far: 200 }} {...props}>
+    <Canvas ref={canvasRef} style={{ touchAction: 'none' }} shadows dpr={isMobile ? 1 : [1, 1.5]}f gl={{ antialias: false }} orthographic camera={{ zoom: cameraZoom, position: [0, 0, 100], near: 1, far: 200 }} {...props}>
       
       <color attach="background" args={['#b1b3bd']} />
       <ResponsiveText z={2} />
@@ -371,11 +372,15 @@ function Scene(props) {
           </Model>
         </Connector>
         <Connector position={[10, 10, 5]}>
-          <Model checkerColors={['#a2a1ff', '#ad73ff']}>
+          <Model checkerColors={[accents[2], accents[3]]}>
           </Model>
         </Connector>
         <Connector position={[10, 10, 5]}>
-          <Model checkerColors={['#00a2ff', '#ffffff']}>
+          <Model checkerColors={[accents[5], accents[6]]}>
+          </Model>
+        </Connector>
+        <Connector position={[10, 10, 5]}>
+          <Model checkerColors={[accents[4], '#ffffff']}>
           </Model>
         </Connector>
         <Connector position={[10, 10, 5]}>
@@ -428,7 +433,7 @@ function Pointer({ vec = new THREE.Vector3() }) {
   )
 }
 
-function Model({ children, color = 'white', roughness = 0, divisions = 4, checkerColors = ['#0000ff', '#ffffff'], ...props }) {
+function Model({ children, color = 'white', roughness = 0, divisions = 4, checkerColors = [accents[1], accents[0]], ...props }) {
   const ref = useRef()
   useFrame((state, delta) => {
     easing.dampC(ref.current.material.color, color, 0.2, delta)
@@ -441,7 +446,6 @@ function Model({ children, color = 'white', roughness = 0, divisions = 4, checke
     canvas.height = size;
     const context = canvas.getContext('2d');
     
-    const colors = ['#0000ff', '#ffffff']; // Black and white for the checker pattern
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
         context.fillStyle = checkerColors[(x + y) % 2]; // Alternate colors for each square
