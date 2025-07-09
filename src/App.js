@@ -66,7 +66,7 @@ function ResponsiveText({
   }, [viewport.width])
 
   const fontSize = text.includes('\n')
-    ? viewport.width / 5.5
+    ? viewport.width / 5
     : viewport.width / 9
 
   const maxWidth = viewport.width
@@ -136,8 +136,8 @@ const socials = [
 ]
 
 // Shadow settings
-const shadowLayers = 6
-const shadowOffsetX = -0.005
+const shadowLayers = 4
+const shadowOffsetX = -0.0075
 const shadowOffsetY = 0
 
 function getShadowColor(index, totalLayers, hover = false) {
@@ -161,7 +161,7 @@ export function SocialLinks3D() {
   const FONT_SIZE = 0.3
   const GAP = 0.25
   const marginX = -viewport.width / 2 + 0.15
-  const marginY = -viewport.height / 2 + 0.7
+  const marginY = -viewport.height / 2 + 0.72
   const spacingY = 0.4
   const fixedZ = 2
 
