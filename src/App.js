@@ -153,10 +153,13 @@ export function SocialLinks3D() {
   const { viewport } = useThree()
   const groupRef = useRef()
   const [hovered, setHovered] = useState(null)
+  const [pressed, setPressed] = useState(null)
   const [ready, setReady] = useState(false)
 
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+
   const FONT_SIZE = 0.3
-  const GAP = 0.2
+  const GAP = 0.25
   const marginX = -viewport.width / 2 + 0.15
   const marginY = -viewport.height / 2 + 0.7
   const spacingY = 0.4
@@ -200,7 +203,7 @@ export function SocialLinks3D() {
       const group = groupRef.current.children[i]
       if (!group) return
 
-      const targetX = hovered === name ? 0.1 : 0
+      const targetX = (hovered === name || pressed === name) ? 0.08 : 0
       if (!targetOffsets.current[name]) targetOffsets.current[name] = 0
       targetOffsets.current[name] += (targetX - targetOffsets.current[name]) * 0.15
       group.position.x = targetOffsets.current[name]
@@ -224,14 +227,19 @@ export function SocialLinks3D() {
         const isHovered = hovered === name
         const box = bounds[name]
 
+        const isActive = !isMobile ? hovered === name : pressed === name
+
         return (
           <group key={name} position={[0, yPos, 0]}>
             {/* Hover Box */}
             {ready && box && (
               <mesh
-                position={[(box.width / 2) -.05, 0, 0.05]} // z > 0 to be in front
-                onPointerOver={() => setHovered(name)}
-                onPointerOut={() => setHovered(null)}
+                position={[(box.width / 2) - 0.05, 0, 0.05]}
+                onPointerOver={() => !isMobile && setHovered(name)}
+                onPointerOut={() => !isMobile && setHovered(null)}
+                onPointerDown={() => isMobile && setPressed(name)}
+                onPointerUp={() => isMobile && setPressed(null)}
+                onPointerCancel={() => isMobile && setPressed(null)}
               >
                 <boxGeometry args={[box.width, box.height * .8, 0.1]} />
                 <meshBasicMaterial
@@ -252,7 +260,7 @@ export function SocialLinks3D() {
                 fontSize={FONT_SIZE}
                 anchorX="center"
                 anchorY="middle"
-                color={getShadowColor(j, shadowLayers, isHovered)}
+                color={getShadowColor(j, shadowLayers, isActive)}
                 position={[
                   iconX + shadowOffsetX * (j + 1),
                   shadowOffsetY * (j + 1),
@@ -270,7 +278,7 @@ export function SocialLinks3D() {
               fontSize={FONT_SIZE}
               anchorX="center"
               anchorY="middle"
-              color={isHovered ? darkenColor('white', 0.6) : 'white'}
+              color={isActive ? darkenColor('white', 0.6) : 'white'}
               position={[iconX, 0, 0]}
               material-toneMapped={false}
               onClick={() => window.open(url, '_blank')}
@@ -292,7 +300,7 @@ export function SocialLinks3D() {
                 ]}
                 anchorX="left"
                 anchorY="middle"
-                color={getShadowColor(j, shadowLayers, isHovered)}
+                color={getShadowColor(j, shadowLayers, isActive)}
                 material-toneMapped={false}
               >
                 {name}
@@ -306,7 +314,7 @@ export function SocialLinks3D() {
               position={[textX, 0, 0]}
               anchorX="left"
               anchorY="middle"
-              color={isHovered ? darkenColor('white', 0.6) : 'white'}
+              color={isActive ? darkenColor('white', 0.6) : 'white'}
               material-toneMapped={false}
               onClick={() => window.open(url, '_blank')}
               ref={el => (textRefs.current[name] = el)}
@@ -319,7 +327,6 @@ export function SocialLinks3D() {
     </group>
   )
 }
-
 
 function Scene(props) {
   const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
