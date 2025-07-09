@@ -1,6 +1,7 @@
 import * as THREE from 'three'
+import { Color, Box3, Vector3 } from 'three'
 import { useRef, useReducer, useMemo, useLayoutEffect, useState, useEffect } from 'react'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber'
 import { useGLTF, MeshTransmissionMaterial, Environment, Lightformer, Text, Html, Text3D, Center } from '@react-three/drei'
 import { CuboidCollider, BallCollider, Physics, RigidBody } from '@react-three/rapier'
 import { EffectComposer, N8AO } from '@react-three/postprocessing'
@@ -42,7 +43,6 @@ export const App = () => {
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
       <Scene />
-      <SocialLinks />
     </div>
   )
 }
@@ -58,7 +58,7 @@ function ResponsiveText({
   const [text, setText] = useState('fucksimon')
 
   useEffect(() => {
-    if (viewport.width < 3) {
+    if (viewport.width < 5) {
       setText('fuck\nsimon')
     } else {
       setText('fucksimon')
@@ -66,8 +66,8 @@ function ResponsiveText({
   }, [viewport.width])
 
   const fontSize = text.includes('\n')
-    ? viewport.width / 6
-    : viewport.width / 10.5
+    ? viewport.width / 5.5
+    : viewport.width / 9
 
   const maxWidth = viewport.width
 
@@ -128,60 +128,195 @@ function ResponsiveText({
 }
 
 const socials = [
-  { name: "instagram", icon: "fab fa-instagram", url: "https://instagram.com" },
-  { name: "tiktok", icon: "fab fa-tiktok", url: "https://tiktok.com" },
-  { name: "youtube", icon: "fab fa-youtube", url: "https://youtube.com" },
-  { name: "spotify", icon: "fab fa-spotify", url: "https://spotify.com" },
-  { name: "apple music", icon: "fab fa-apple", url: "https://music.apple.com" },
+  { name: "instagram", url: "https://instagram.com", icon: "\uf16d" }, // Instagram
+  { name: "tiktok", url: "https://tiktok.com", icon: "\ue07b" },       // TikTok (might need pro or custom font)
+  { name: "youtube", url: "https://youtube.com", icon: "\uf167" },     // YouTube
+  { name: "spotify", url: "https://spotify.com", icon: "\uf1bc" },     // Spotify
+  { name: "apple music", url: "https://music.apple.com", icon: "\uf179" }, // Apple
 ]
 
-function SocialLinks() {
-  const shadowLayers = 6
-  const shadowOffsetX = 0.75 // in px
-  const shadowOffsetY = 2 // in px
+// Shadow settings
+const shadowLayers = 6
+const shadowOffsetX = -0.005
+const shadowOffsetY = 0
 
-  // Build stacked shadow string
-  const shadow = Array.from({ length: shadowLayers }).map((_, i) => {
-    const offsetX = -(i + 1) * shadowOffsetX
-    const offsetY = 0
-    const colorValue = 255 - (255 - 150) * (i / (shadowLayers - 1))
-    const hex = `#${Math.round(colorValue).toString(16).padStart(2, '0').repeat(3)}`
-    return `${offsetX}px ${offsetY}px ${hex}`
-  }).join(', ')
+function getShadowColor(index, totalLayers, hover = false) {
+  const start = hover ? 200 : 255  // Previously 150 → now 200 for softer darkening
+  const end   = hover ? 130 : 150  // Previously 100 → now 130 for softer darkening
+  const fraction = index / (totalLayers - 1)
+  const value = Math.round(start - (start - end) * fraction)
+  const hex = `#${value.toString(16).padStart(2, '0').repeat(3)}`
+  return hex
+}
+
+export function SocialLinks3D() {
+  const { viewport } = useThree()
+  const groupRef = useRef()
+  const [hovered, setHovered] = useState(null)
+  const [ready, setReady] = useState(false)
+
+  const FONT_SIZE = 0.3
+  const GAP = 0.2
+  const marginX = -viewport.width / 2 + 0.15
+  const marginY = -viewport.height / 2 + 0.7
+  const spacingY = 0.4
+  const fixedZ = 2
+
+  const iconRefs = useRef({})
+  const textRefs = useRef({})
+  const [bounds, setBounds] = useState({})
+  const targetOffsets = useRef({})
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const newBounds = {}
+      socials.forEach(({ name }) => {
+        const icon = iconRefs.current[name]
+        const text = textRefs.current[name]
+        if (icon && text && icon.geometry && text.geometry) {
+          icon.geometry.computeBoundingBox()
+          text.geometry.computeBoundingBox()
+          const iconBox = icon.geometry.boundingBox
+          const textBox = text.geometry.boundingBox
+          const width = (iconBox.max.x - iconBox.min.x) + (textBox.max.x - textBox.min.x) + GAP
+          const height = Math.max(
+            iconBox.max.y - iconBox.min.y,
+            textBox.max.y - textBox.min.y
+          )
+          newBounds[name] = { width, height }
+        }
+      })
+      setBounds(newBounds)
+      setReady(true)
+    }, 200) // wait for fonts to load
+    return () => clearTimeout(timeout)
+  }, [])
+
+  useFrame(() => {
+    if (!groupRef.current) return
+    groupRef.current.position.set(marginX, marginY + (socials.length - 1) * spacingY, fixedZ)
+
+    socials.forEach(({ name }, i) => {
+      const group = groupRef.current.children[i]
+      if (!group) return
+
+      const targetX = hovered === name ? 0.1 : 0
+      if (!targetOffsets.current[name]) targetOffsets.current[name] = 0
+      targetOffsets.current[name] += (targetX - targetOffsets.current[name]) * 0.15
+      group.position.x = targetOffsets.current[name]
+    })
+  })
+
+  function darkenColor(hex, amount = 0.7) {
+    const c = new Color(hex)
+    c.r *= amount
+    c.g *= amount
+    c.b *= amount
+    return `#${c.getHexString()}`
+  }
 
   return (
-    <div style={{
-      position: 'absolute',
-      bottom: '2rem',
-      left: '1.5rem',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '0rem',
-      fontFamily: '"Triodion Regular", sans-serif',
-      fontSize: '3rem',
-      zIndex: 10,
-      lineHeight: '1.1',  // Add this line
-    }}>
-      {socials.map(({ name, icon, url }) => (
-        <a
-          key={name}
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem',
-            color: 'white',
-            textDecoration: 'none',
-            textShadow: shadow,
-          }}
-        >
-          <i className={icon} style={{ width: '3.25rem', textAlign: 'center' }}></i>
-          <span>{name}</span>
-        </a>
-      ))}
-    </div>
+    <group ref={groupRef}>
+      {socials.map(({ name, url, icon }, i) => {
+        const yPos = -i * spacingY
+        const iconX = 0.15
+        const textX = 0.15 + GAP
+        const isHovered = hovered === name
+        const box = bounds[name]
+
+        return (
+          <group key={name} position={[0, yPos, 0]}>
+            {/* Hover Box */}
+            {ready && box && (
+              <mesh
+                position={[(box.width / 2) -.05, 0, 0.05]} // z > 0 to be in front
+                onPointerOver={() => setHovered(name)}
+                onPointerOut={() => setHovered(null)}
+              >
+                <boxGeometry args={[box.width, box.height * .8, 0.1]} />
+                <meshBasicMaterial
+                  transparent
+                  opacity={0}
+                  depthWrite={false}
+                  depthTest={false}
+                />
+              </mesh>
+            )}
+
+            {/* Icon shadows */}
+            {Array.from({ length: shadowLayers }).map((_, j) => (
+              <Text
+                key={`icon-shadow-${j}`}
+                ref={j === 0 ? el => (iconRefs.current[name] = el) : null}
+                font="/fa-brands-400.ttf"
+                fontSize={FONT_SIZE}
+                anchorX="center"
+                anchorY="middle"
+                color={getShadowColor(j, shadowLayers, isHovered)}
+                position={[
+                  iconX + shadowOffsetX * (j + 1),
+                  shadowOffsetY * (j + 1),
+                  -0.001 - j * 0.0001,
+                ]}
+                material-toneMapped={false}
+              >
+                {icon}
+              </Text>
+            ))}
+
+            {/* Main Icon */}
+            <Text
+              font="/fa-brands-400.ttf"
+              fontSize={FONT_SIZE}
+              anchorX="center"
+              anchorY="middle"
+              color={isHovered ? darkenColor('white', 0.6) : 'white'}
+              position={[iconX, 0, 0]}
+              material-toneMapped={false}
+              onClick={() => window.open(url, '_blank')}
+              ref={el => (iconRefs.current[name] = el)}
+            >
+              {icon}
+            </Text>
+
+            {/* Text shadows */}
+            {Array.from({ length: shadowLayers }).map((_, j) => (
+              <Text
+                key={`text-shadow-${j}`}
+                font="/Triodion-Regular.ttf"
+                fontSize={FONT_SIZE}
+                position={[
+                  textX + shadowOffsetX * (j + 1),
+                  shadowOffsetY * (j + 1),
+                  -0.0005 - j * 0.0001,
+                ]}
+                anchorX="left"
+                anchorY="middle"
+                color={getShadowColor(j, shadowLayers, isHovered)}
+                material-toneMapped={false}
+              >
+                {name}
+              </Text>
+            ))}
+
+            {/* Main Text */}
+            <Text
+              font="/Triodion-Regular.ttf"
+              fontSize={FONT_SIZE}
+              position={[textX, 0, 0]}
+              anchorX="left"
+              anchorY="middle"
+              color={isHovered ? darkenColor('white', 0.6) : 'white'}
+              material-toneMapped={false}
+              onClick={() => window.open(url, '_blank')}
+              ref={el => (textRefs.current[name] = el)}
+            >
+              {name}
+            </Text>
+          </group>
+        )
+      })}
+    </group>
   )
 }
 
@@ -208,10 +343,11 @@ function Scene(props) {
   const [accent, click] = useReducer((state) => ++state % accents.length, 0)
   const connectors = useMemo(() => shuffle(accent), [accent])
   return (
-    <Canvas ref={canvasRef} style={{ touchAction: 'none' }} shadows dpr={isMobile ? 1 : [1, 1.5]}f gl={{ antialias: false }} camera={{ position: [0, 0, 15], fov: 17.5, near: 1, far: 20 }} {...props}>
+    <Canvas ref={canvasRef} style={{ touchAction: 'none' }} shadows dpr={isMobile ? 1 : [1, 1.5]}f gl={{ antialias: false }} orthographic camera={{ zoom: 160, position: [0, 0, 100], near: 1, far: 200 }} {...props}>
       
       <color attach="background" args={['#b1b3bd']} />
       <ResponsiveText z={2} />
+      <SocialLinks3D />
       <ambientLight intensity={0.4} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
       <Physics /*debug*/ gravity={[0, 0, 0]}>
