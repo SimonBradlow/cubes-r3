@@ -1,0 +1,5 @@
+Canvas {
+    cursor: url('/public/cursor.png'), auto;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent; /* optional, nicer tap effect */
+  }
