@@ -65,7 +65,7 @@ function ResponsiveText({
   }, [viewport.width])
 
   const fontSize = text.includes('\n')
-    ? viewport.width / 5
+    ? viewport.width / 4.85
     : viewport.width / 9
 
   const maxWidth = viewport.width
@@ -154,8 +154,8 @@ function tintColor(baseHex, tintHex = accents[4]) {
 function getShadowColor(index, totalLayers, isActive, tintHex = accents[4]) {
   // Base shadow grayscale value
   const baseVal = isActive
-    ? 250 - (index / (totalLayers - 1)) * 80  // lighter shadows when active
-    : 220 - (index / (totalLayers - 1)) * 80  // normal shadows
+    ? 240 - (index / (totalLayers - 1)) * 80  // lighter shadows when active
+    : 210 - (index / (totalLayers - 1)) * 80  // normal shadows
 
   // Clamp and convert to hex
   const grayVal = Math.round(baseVal)
