@@ -27,8 +27,7 @@ export const App = () => {
     const style = document.createElement('style')
     style.innerHTML = `
       @font-face {
-        font-family: 'Triodion Regular';
-        src: url('/fonts/Triodion-Regular.ttf') format('truetype');
+        font-family: 'Arial';
         font-weight: normal;
         font-style: normal;
         lineHeight: '1',  // or a smaller value like '0.9'
@@ -90,13 +89,13 @@ function ResponsiveText({
     return (
       <Text
         key={`shadow-${i}`}
-        font="/fonts/Triodion-Regular.ttf"
+        //font="/fonts/Triodion-Regular.ttf"
         color={getShadowColor(i, 5)}
         anchorX="left"
         anchorY="middle"
         fontSize={fontSize}
         maxWidth={viewport.width}
-        position={[offsetX, 1.25, offsetZ]}
+        position={[offsetX-0.25, 1.25, offsetZ]}
         lineHeight={.8}
         letterSpacing={-0.02}
         opacity={0.5}
@@ -111,13 +110,13 @@ function ResponsiveText({
     <>
       {shadows}
       <Text
-        font="/fonts/Triodion-Regular.ttf"
+        //font="/fonts/Triodion-Regular.ttf"
         color="white"
         anchorX="left"
         anchorY="middle"
         fontSize={fontSize}
         maxWidth={viewport.width}
-        position={[0, 1.25, z]}
+        position={[-0.25, 1.25, z]}
         lineHeight={.8}
         letterSpacing={-0.02}
       >
@@ -128,25 +127,49 @@ function ResponsiveText({
 }
 
 const socials = [
-  { name: "instagram", url: "https://instagram.com", icon: "\uf16d" }, // Instagram
-  { name: "tiktok", url: "https://tiktok.com", icon: "\ue07b" },       // TikTok (might need pro or custom font)
-  { name: "youtube", url: "https://youtube.com", icon: "\uf167" },     // YouTube
-  { name: "spotify", url: "https://spotify.com", icon: "\uf1bc" },     // Spotify
-  { name: "apple music", url: "https://music.apple.com", icon: "\uf179" }, // Apple
+  { name: "instagram", url: "https://instagram.com/fucksimon", icon: "\uf16d" }, // Instagram
+  { name: "tiktok", url: "https://tiktok.com/@fucksim0n", icon: "\ue07b" },       // TikTok (might need pro or custom font)
+  { name: "youtube", url: "https://youtube.com/@fucksimon", icon: "\uf167" },     // YouTube
+  //{ name: "spotify", url: "https://spotify.com", icon: "\uf1bc" },     // Spotify
+  //{ name: "apple music", url: "https://music.apple.com", icon: "\uf179" }, // Apple
 ]
 
 // Shadow settings
 const shadowLayers = 4
-const shadowOffsetX = -0.0075
+const shadowOffsetX = -0.005
 const shadowOffsetY = 0
 
-function getShadowColor(index, totalLayers, hover = false) {
-  const start = hover ? 200 : 255  // Previously 150 → now 200 for softer darkening
-  const end   = hover ? 130 : 150  // Previously 100 → now 130 for softer darkening
-  const fraction = index / (totalLayers - 1)
-  const value = Math.round(start - (start - end) * fraction)
-  const hex = `#${value.toString(16).padStart(2, '0').repeat(3)}`
-  return hex
+// Multiply base color by tint color, returns hex string
+function tintColor(baseHex, tintHex = accents[4]) {
+  const base = new Color(baseHex)
+  const tint = new Color(tintHex)
+  const r = base.r * tint.r
+  const g = base.g * tint.g
+  const b = base.b * tint.b
+  const c = new Color(r, g, b)
+  return `#${c.getHexString()}`
+}
+
+// Progressive shadow gray colors for shadows, darkening on deeper layers
+function getShadowColor(index, totalLayers, isActive, tintHex = accents[4]) {
+  // Base shadow grayscale value
+  const baseVal = isActive
+    ? 240 - (index / (totalLayers - 1)) * 80  // lighter shadows when active
+    : 220 - (index / (totalLayers - 1)) * 80  // normal shadows
+
+  // Clamp and convert to hex
+  const grayVal = Math.round(baseVal)
+  const grayHex = new Color(`rgb(${grayVal},${grayVal},${grayVal})`)
+  const tintColorObj = new Color(tintHex)
+
+  if (isActive) {
+    // multiply shadow gray by tint color
+    grayHex.r *= tintColorObj.r
+    grayHex.g *= tintColorObj.g
+    grayHex.b *= tintColorObj.b
+  }
+
+  return `#${grayHex.getHexString()}`
 }
 
 export function SocialLinks3D() {
@@ -210,24 +233,18 @@ export function SocialLinks3D() {
     })
   })
 
-  function darkenColor(hex, amount = 0.7) {
-    const c = new Color(hex)
-    c.r *= amount
-    c.g *= amount
-    c.b *= amount
-    return `#${c.getHexString()}`
-  }
-
   return (
     <group ref={groupRef}>
-      {socials.map(({ name, url, icon }, i) => {
+      {socials.map(({ name, url, icon, tint }, i) => {
         const yPos = -i * spacingY
         const iconX = 0.15
         const textX = 0.15 + GAP
         const isHovered = hovered === name
+        const isActive = !isMobile ? isHovered : pressed === name
         const box = bounds[name]
 
-        const isActive = !isMobile ? hovered === name : pressed === name
+        // Calculate tinted active color or fallback to white
+        const activeColor = isActive ? tintColor('white', tint) : 'white'
 
         return (
           <group key={name} position={[0, yPos, 0]}>
@@ -241,7 +258,7 @@ export function SocialLinks3D() {
                 onPointerUp={() => isMobile && setPressed(null)}
                 onPointerCancel={() => isMobile && setPressed(null)}
               >
-                <boxGeometry args={[box.width, box.height * .8, 0.1]} />
+                <boxGeometry args={[box.width, box.height * 0.8, 0.1]} />
                 <meshBasicMaterial
                   transparent
                   opacity={0}
@@ -266,7 +283,7 @@ export function SocialLinks3D() {
                   shadowOffsetY * (j + 1),
                   -0.001 - j * 0.0001,
                 ]}
-                material-toneMapped={false}
+                material-toneMapped={true}
               >
                 {icon}
               </Text>
@@ -278,9 +295,9 @@ export function SocialLinks3D() {
               fontSize={FONT_SIZE}
               anchorX="center"
               anchorY="middle"
-              color={isActive ? darkenColor('white', 0.6) : 'white'}
+              color={activeColor}
               position={[iconX, 0, 0]}
-              material-toneMapped={false}
+              material-toneMapped={true}
               onClick={() => window.open(url, '_blank')}
               ref={el => (iconRefs.current[name] = el)}
             >
@@ -291,7 +308,7 @@ export function SocialLinks3D() {
             {Array.from({ length: shadowLayers }).map((_, j) => (
               <Text
                 key={`text-shadow-${j}`}
-                font="/fonts/Triodion-Regular.ttf"
+                //font="/fonts/Triodion-Regular.ttf"
                 fontSize={FONT_SIZE}
                 position={[
                   textX + shadowOffsetX * (j + 1),
@@ -301,7 +318,7 @@ export function SocialLinks3D() {
                 anchorX="left"
                 anchorY="middle"
                 color={getShadowColor(j, shadowLayers, isActive)}
-                material-toneMapped={false}
+                material-toneMapped={true}
               >
                 {name}
               </Text>
@@ -309,13 +326,13 @@ export function SocialLinks3D() {
 
             {/* Main Text */}
             <Text
-              font="/fonts/Triodion-Regular.ttf"
+              //font="/fonts/Triodion-Regular.ttf"
               fontSize={FONT_SIZE}
               position={[textX, 0, 0]}
               anchorX="left"
               anchorY="middle"
-              color={isActive ? darkenColor('white', 0.6) : 'white'}
-              material-toneMapped={false}
+              color={activeColor}
+              material-toneMapped={true}
               onClick={() => window.open(url, '_blank')}
               ref={el => (textRefs.current[name] = el)}
             >
@@ -376,13 +393,13 @@ function Scene(props) {
           </Model>
         </Connector>
         <Connector position={[10, 10, 5]}>
-          <Model checkerColors={[accents[5], accents[6]]}>
+          <Model checkerColors={[accents[2], accents[3]]}>
           </Model>
         </Connector>
-        <Connector position={[10, 10, 5]}>
+        {/*<Connector position={[10, 10, 5]}>
           <Model checkerColors={[accents[4], '#ffffff']}>
           </Model>
-        </Connector>
+        </Connector>*/}
         <Connector position={[10, 10, 5]}>
           <Model divisions={5}>
           </Model>
