@@ -154,7 +154,7 @@ function tintColor(baseHex, tintHex = accents[4]) {
 function getShadowColor(index, totalLayers, isActive, tintHex = accents[4]) {
   // Base shadow grayscale value
   const baseVal = isActive
-    ? 240 - (index / (totalLayers - 1)) * 80  // lighter shadows when active
+    ? 250 - (index / (totalLayers - 1)) * 80  // lighter shadows when active
     : 220 - (index / (totalLayers - 1)) * 80  // normal shadows
 
   // Clamp and convert to hex
