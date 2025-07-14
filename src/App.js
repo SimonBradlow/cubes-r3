@@ -9,7 +9,6 @@ import { easing } from 'maath'
 import { accents } from './colors'
 import './App.css'
 
-
 const shuffle = (accent = 0) => [
   { color: 'white', roughness: 0.1 },
   { color: 'white', roughness: 0.75 },
@@ -17,9 +16,6 @@ const shuffle = (accent = 0) => [
   { color: 'white', roughness: 0.1 },
   { color: 'white', roughness: 0.75 },
   { color: 'white', roughness: 0.1 },
-  //{ color: 'white', roughness: 0.1, accent: true },
-  //{ color: accents[2], roughness: 0.75, accent: true },
-  //{ color:  accents[3], roughness: 0.1, accent: true }
 ]
 
 export const App = () => {
