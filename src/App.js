@@ -172,7 +172,7 @@ function getShadowColor(index, totalLayers, isActive, tintHex = accents[4]) {
   return `#${grayHex.getHexString()}`
 }
 
-export function SocialLinks3D() {
+export function SocialLinks3D({ setHoveringLink }) {
   const { viewport } = useThree()
   const groupRef = useRef()
   const [hovered, setHovered] = useState(null)
@@ -218,6 +218,51 @@ export function SocialLinks3D() {
     return () => clearTimeout(timeout)
   }, [])
 
+  useEffect(() => {
+    function clearPressed() {
+      setPressed(null)
+    }
+    window.addEventListener('pointerup', clearPressed)
+    window.addEventListener('pointercancel', clearPressed)
+
+    return () => {
+      window.removeEventListener('pointerup', clearPressed)
+      window.removeEventListener('pointercancel', clearPressed)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isMobile) return;
+
+    function onPointerMove(event) {
+      // Get all intersected objects from event
+      const intersects = event.intersections || [];
+
+      // If no intersections, clear pressed
+      if (intersects.length === 0) {
+        setPressed(null);
+        setHoveringLink(false);
+        return;
+      }
+
+      // If pressed is set, check if the pressed link's mesh is still under pointer
+      const pressedMesh = iconRefs.current[pressed] || textRefs.current[pressed];
+      const isStillPressed = intersects.some(i => i.object === pressedMesh);
+
+      if (!isStillPressed) {
+        setPressed(null);
+        setHoveringLink(false);
+      }
+    }
+
+    // Add global event listener on canvas or window
+    window.addEventListener('pointermove', onPointerMove);
+
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove);
+    };
+  }, [pressed, isMobile]);
+
   useFrame(() => {
     if (!groupRef.current) return
     groupRef.current.position.set(marginX, marginY + (socials.length - 1) * spacingY, fixedZ)
@@ -252,8 +297,18 @@ export function SocialLinks3D() {
             {ready && box && (
               <mesh
                 position={[(box.width / 2) - 0.05, 0, 0.05]}
-                onPointerOver={() => !isMobile && setHovered(name)}
-                onPointerOut={() => !isMobile && setHovered(null)}
+                onPointerOver={() => {
+                  if (!isMobile) {
+                    setHovered(name);
+                    setHoveringLink(true);
+                  }
+                }}
+                onPointerOut={() => {
+                  if (!isMobile) {
+                    setHovered(null);
+                    setHoveringLink(false);
+                  }
+                }}
                 onPointerDown={() => isMobile && setPressed(name)}
                 onPointerUp={() => isMobile && setPressed(null)}
                 onPointerCancel={() => isMobile && setPressed(null)}
@@ -366,13 +421,26 @@ function Scene(props) {
   }, [])
 
   const [accent, click] = useReducer((state) => ++state % accents.length, 0)
+  const [hoveringLink, setHoveringLink] = useState(false)
   const connectors = useMemo(() => shuffle(accent), [accent])
   return (
-    <Canvas ref={canvasRef} style={{ touchAction: 'none' }} shadows dpr={isMobile ? 1 : [1, 1.5]}f gl={{ antialias: false }} orthographic camera={{ zoom: cameraZoom, position: [0, 0, 100], near: 1, far: 200 }} {...props}>
+    <Canvas 
+      ref={canvasRef} 
+      style={{ 
+        touchAction: 'none', 
+        cursor: hoveringLink 
+          ? "url('/cursorHoverFix.png'), auto" 
+          : "url('/cursorHandFix.png'), auto"
+        }}
+      shadows 
+      dpr={isMobile ? 1 : [1, 1.5]}f 
+      gl={{ antialias: false }} 
+      orthographic 
+      camera={{ zoom: cameraZoom, position: [0, 0, 100], near: 1, far: 200 }} {...props}>
       
       <color attach="background" args={['#b1b3bd']} />
       <ResponsiveText z={2} />
-      <SocialLinks3D />
+      <SocialLinks3D setHoveringLink={setHoveringLink} />
       <ambientLight intensity={0.4} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
       <Physics /*debug*/ gravity={[0, 0, 0]}>
