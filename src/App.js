@@ -80,7 +80,6 @@ function ResponsiveText({
     return hex
   }
 
-
   // Generate shadow layers
   const shadows = Array.from({ length: shadowLayers }).map((_, i) => {
     const offsetX = -shadowOffsetX * (i + 1)
@@ -104,7 +103,6 @@ function ResponsiveText({
       </Text>
     )
   })
-
 
   return (
     <>
@@ -424,28 +422,40 @@ function Scene(props) {
   const [hoveringLink, setHoveringLink] = useState(false)
   const connectors = useMemo(() => shuffle(accent), [accent])
   return (
-    <Canvas 
-      ref={canvasRef} 
-      style={{ 
-        touchAction: 'none', 
-        cursor: hoveringLink 
-          ? "url('/cursorHoverFix.png'), auto" 
-          : "url('/cursorHandFix.png'), auto"
+    <Canvas
+      ref={canvasRef}
+      style={{
+        touchAction: 'none',
+        ...( !isMobile
+          ? {
+              cursor: hoveringLink
+                ? "url('/cursorHoverFix.png'), auto"
+                : "url('/cursorHandFix.png'), auto",
+            }
+          : {}
+          )
         }}
-      shadows 
-      dpr={isMobile ? 1 : [1, 1.5]}f 
-      gl={{ antialias: false }} 
-      orthographic 
-      camera={{ zoom: cameraZoom, position: [0, 0, 100], near: 1, far: 200 }} {...props}>
-      
+      shadows
+      dpr={isMobile ? 1 : [1, 1.5]}
+      gl={{ 
+        antialias: false,
+        powerPreference: "high-performance", // Try this
+        stencil: false, // Disable stencil buffer
+        depth: true,
+        alpha: false // Disable alpha channel
+      }}
+      orthographic
+      camera={{ zoom: cameraZoom, position: [0, 0, 100], near: 1, far: 200 }}
+      {...props}
+    >
       <color attach="background" args={['#b1b3bd']} />
       <ResponsiveText z={2} />
       <SocialLinks3D setHoveringLink={setHoveringLink} />
       <ambientLight intensity={0.4} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
-      <Physics /*debug*/ gravity={[0, 0, 0]}>
+      <Physics gravity={[0, 0, 0]}>
         <Pointer />
-        {connectors.map((props, i) => <Connector key={i} {...props} />) /* prettier-ignore */}
+        {connectors.map((props, i) => <Connector key={i} {...props} />)}
         <Connector position={[10, 10, 5]}>
           <Model>
             <MeshTransmissionMaterial clearcoat={1} thickness={0.1} anisotropicBlur={0.1} chromaticAberration={0.1} samples={8} resolution={512} />
@@ -464,17 +474,19 @@ function Scene(props) {
           <Model checkerColors={[accents[2], accents[3]]}>
           </Model>
         </Connector>
-        {/*<Connector position={[10, 10, 5]}>
-          <Model checkerColors={[accents[4], '#ffffff']}>
-          </Model>
-        </Connector>*/}
         <Connector position={[10, 10, 5]}>
           <Model divisions={5}>
           </Model>
         </Connector>
       </Physics>
-      <EffectComposer disableNormalPass multisampling={8}>
-        <N8AO distanceFalloff={1} aoRadius={1} intensity={4} halfRes={true} />
+      <EffectComposer disableNormalPass multisampling={4}>
+        <N8AO 
+          distanceFalloff={1} 
+          aoRadius={1} 
+          intensity={4} 
+          halfRes={true}
+          samples={16}
+        />
       </EffectComposer>
       <Environment resolution={256}>
         <group rotation={[-Math.PI / 3, 0, 1]}>
@@ -551,8 +563,8 @@ function Model({ children, color = 'white', roughness = 0, divisions = 4, checke
   }, []);
   return (
     <mesh ref={ref} castShadow receiveShadow scale={10}>
-      <boxGeometry args={[0.10, 0.10, 0.10]} /> {/* Cube Model */}
-      <meshStandardMaterial metalness={0.01} roughness={roughness} map={checkerTexture} />  {/* map={materials.base.map} */}
+      <boxGeometry args={[0.10, 0.10, 0.10]} />
+      <meshStandardMaterial metalness={0.01} roughness={roughness} map={checkerTexture} />
       {children}
     </mesh>
   )
