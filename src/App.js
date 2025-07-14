@@ -7,7 +7,6 @@ import { CuboidCollider, BallCollider, Physics, RigidBody } from '@react-three/r
 import { EffectComposer, N8AO } from '@react-three/postprocessing'
 import { easing } from 'maath'
 import { accents } from './colors'
-import './App.css'
 
 const shuffle = (accent = 0) => [
   { color: 'white', roughness: 0.1 },
@@ -422,6 +421,9 @@ function Scene(props) {
       ref={canvasRef}
       style={{
         touchAction: 'none',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        WebkitTapHighlightColor: 'transparent',
         ...( !isMobile
           ? {
               cursor: hoveringLink
