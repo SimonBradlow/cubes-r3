@@ -9,13 +9,12 @@
       manifest.json provides metadata used when your web app is added to the
       homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
     -->
-	<link rel="manifest" href="%PUBLIC_URL%/manifest.json">
-	<link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
-
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-  />
+  <link rel="icon" type="image/png" href="%PUBLIC_URL%/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="%PUBLIC_URL%/favicon.svg" />
+  <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="fucksimon" />
+  <link rel="manifest" href="%PUBLIC_URL%/site.webmanifest" />
 	<!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.
@@ -26,11 +25,23 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
 	<title>fucksimon</title>
+
+  <style>
+    noscript {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      display: block;
+      margin: 2rem auto;
+      font-size: 1.2rem;
+      color: black;
+    }
+  </style>
 </head>
 
 <body>
 	<noscript>
-		You need to enable JavaScript to run this app.
+    <div style="font-size: 2rem; text-align: center;">☹️</div>
+    You need to enable JavaScript to view this page
 	</noscript>
 	<div id="root"></div>
 	<!--
